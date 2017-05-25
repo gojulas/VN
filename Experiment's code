@@ -1,0 +1,442 @@
+# The script of the game goes in this file.
+
+# Declare characters used by this game. The color argument colorizes the
+# name of the character.
+
+#CHARACTERS 
+define a = Character(_("Ahiru"), color="#e2b3c5")
+
+#IMAGES OF CHARACTERS
+image ahiru smile 1 = "Ahiru_smile_1.png"
+image ahiru smile 2 = "ahiru_smile_2.png"
+image ahiru wink smile 3 = "ahiru_wink_smile_3.png"
+image ahiru wink smile 4 = "ahiru_wink_smile_4.png"
+image kiss1 = "kiss1.png"
+image kiss2 = "kiss2.png"
+image kiss3 = "kiss3.png"
+image kiss4 = "kiss4.png"
+image finalpic = "finalpic.png"
+image socks1 = "socks1.png"
+image socks2 = "socks2.png"
+
+#BACKGROUNDS
+image bg park = "bg_park.png"
+image house = "house.png"
+image livingroom = "livingroom.jpg"
+image room = "room.jpg"
+image charm = "charm.jpg"
+image credits = "credits.jpg"
+
+#Accesories:
+image celu1 = "celu1.png"
+image celu2 = "celu2.png"
+image heart1 = "pink_heart.png"
+image heart2 = "pink_heart_2.png"
+
+
+
+init:
+
+    python:
+      
+        import math
+
+        class Shaker(object):
+        
+            anchors = {
+                'top' : 0.0,
+                'center' : 0.5,
+                'bottom' : 1.0,
+                'left' : 0.0,
+                'right' : 1.0,
+                }
+        
+            def __init__(self, start, child, dist):
+                if start is None:
+                    start = child.get_placement()
+                #
+                self.start = [ self.anchors.get(i, i) for i in start ]  # central position
+                self.dist = dist    # maximum distance, in pixels, from the starting point
+                self.child = child
+                
+            def __call__(self, t, sizes):
+                # Float to integer... turns floating point numbers to
+                # integers.                
+                def fti(x, r):
+                    if x is None:
+                        x = 0
+                    if isinstance(x, float):
+                        return int(x * r)
+                    else:
+                        return x
+
+                xpos, ypos, xanchor, yanchor = [ fti(a, b) for a, b in zip(self.start, sizes) ]
+
+                xpos = xpos - xanchor
+                ypos = ypos - yanchor
+                
+                nx = xpos + (1.0-t) * self.dist * (renpy.random.random()*2-1)
+                ny = ypos + (1.0-t) * self.dist * (renpy.random.random()*2-1)
+
+                return (int(nx), int(ny), 0, 0)
+        
+        def _Shake(start, time, child=None, dist=100.0, **properties):
+
+            move = Shaker(start, child, dist=dist)
+        
+            return renpy.display.layout.Motion(move,
+                          time,
+                          child,
+                          add_sizes=True,
+                          **properties)
+
+        Shake = renpy.curry(_Shake)
+    #
+    $ sshake = Shake((0, 0, 0, 0), 1.0, dist=15)
+#
+# The game starts here.
+
+label start:
+    
+    
+    #POINT VALUES
+    $ p_ahiru = 0
+    
+    $ gender = True
+    
+    play music "bravely.mp3" loop fadein 1.0
+   
+    
+    # Show a background. This uses a placeholder by default, but you can
+    # add a file (named either "bg room.png" or "bg room.jpg") to the
+    # images directory to show it.
+    
+    
+
+    scene bg park
+    with fade
+
+    # This shows a character sprite. A placeholder is used, but you can
+    # replace it by adding a file named "eileen happy.png" to the images
+    # directory.
+    
+
+    
+    # These display lines of dialogue.
+
+menu:
+    "Are you a boy, or are you a girl?"
+    "Boy":
+        jump pregunta
+    
+    "Girl":
+        $ gender = False
+        jump pregunta
+
+label pregunta:
+    if gender:
+        $ name = renpy.input("What is your name, boy?")
+    else:
+        $ name = renpy.input("What is your name, girl?")
+    
+
+    $ name = name.strip()
+    if name == "":
+        $ name="Anon"
+
+label inicio:
+    
+    "It’s a sunny morning here in Villa Azulejo."
+    "The first month of summer holidays is coming to its end but so far, beautiful memories to remember haven’t even happened yet."
+    "Seems like it’s going to be one of those summers, just being a shut in, enjoying the solitude of your bedroom while watching porn and playing video games."
+    "But today your mom sent you out, to the real life, for some chores."
+    "It’s midday and you are walking on the local park to get some food for today’s dinner."
+    "It’s the good ‘ol Papa Nacho. "
+    "Hey…{w} Is that-"
+    "Ahiru?"
+    
+    scene bg park
+    with None
+    show ahiru smile 1 
+    with moveinleft
+    
+    
+    "This girl is your classmate; you normally don’t cross any word with her, like with any other girl. She is always surrounded for a kind of creepy crowd that always praises her for whatever reason."
+    "It’s like she is famous or something, you don’t know, but some people really seems to love her."
+    
+    "Ohh… {w}She saw you."
+    "You wave at her awkwardly, trying to be polite."
+    "She is coming your way"
+    show ahiru smile 2
+    
+    
+    menu:
+        a "Hey %(name)s! Watchadoing?"
+        "Uhh… nothing, running errands mostly.":
+            a "That’s ok! That makes two of us."
+            a "Sometimes I just don’t like being out of classes, soooo much free time gets a little boring too don’t you think?"
+            "She looks at you simple smiling waiting your reaction."
+        "Hi Ahiru. Well, I’m just doing grocery shopping.":
+            a "Ohh nice. Speaking of food. I was looking for a nice wedding cake for a sibling, been checking prices last week. Well I still do, but haven’t been lucky yet."
+            $ p_ahiru += 1
+    a "Soo… what if we go together a little, you still haven’t got anything yet right? Besides, we should talk more often, but you know… you are kind of… difficult to approach."
+    
+    menu:
+        a "Waddya say? Let’s tag along!"
+        "Yeah, sounds good. Let’s go!":
+            a "Alright! Let’s head to that soda fountain first."
+            $ p_ahiru += 1
+        "I don’t know...":
+            a "Come on, it will be fun. Look, we met here like a big coincidence and you know what? Let’s go to that soda fountain, my treat."
+            "Ahiru takes from your shirt and almost drags you there."
+    
+    "She buys two ice creams for you both, while you look at her in silence. You can’t deny she looks pretty cute. That big pale red bow sure suits her hair."
+    a "You know. I always been interested in getting along with everyone, especially with people on our class."
+    "Yeah, that is not a secret."
+    
+    #IMAGEN AQUI BLUSH
+    a "So I kind of wanna… you know."
+    "Is she blushing?"
+    a "It’d be nice to k-know you better, so we can become friends."
+    "Oh… friends. Yeah… friends. You are not that interested. What’s wrong with this girls? She thinks she just can be nice and have the attention from everyone?"
+    "What a jerk. And where does that blush comes from? Is she serious? No way, she’s just being a tease."
+    "Ahiru start rubbing her forearms on her chest in a clumsy display. How cute."
+    
+    if gender:
+        a "I know you maybe are just introverted and all of that but it’s not healthy to just stay away from others. Beside, your grades in math and chemistry are really high, maybe you know… You can help the girls on those topics, even me since I’m not so good on math."
+    else:   
+        a "I know you maybe are just introverted and all of that but it’s not healthy to just stay away from others. Beside, your grades in math and chemistry are really high, maybe you know… You can help the boys on those topics, even me since I’m not so good on math."
+
+    
+    "You were wondering what were her goals and she just tells you. Gee."
+    "Ahiru looks at you with those big green eyes, guess she is really cute after all."
+    a "%(name)s, let’s be friends ok? I’ll make sure to make you comfortable around others."
+    "Maybe Ahiru is telling the truth and you know deep down this is a good opportunity to stop being just a nihilist asshole."
+    "Fuck it. You nod at her."
+    
+    show ahiru smile 1
+    "Ahiru smiles letting out a little sigh."
+    
+    show ahiru smile 2
+    a "I’m sure you won’t regret opening up, it may sound a little intimidating at first, but it’s worth trying."
+    "You two continued talking for a couple of minutes until you finished the ice creams and part way after exchanging phone numbers. You get you chores done and head back to home."
+    
+    stop music fadeout 1.0
+    hide ahiru smile 2
+    with fade
+ 
+    
+    scene room
+    with fade
+    
+    "You wake up next morning."
+    "Back to ‘work’ it seems."
+    
+    
+    
+    show celu1
+    pause 1 
+    scene room
+    with None
+    show celu2
+    with fade
+    play sound "ring.mp3"
+    show celu2 with hpunch
+    "Your phone rings, it’s Ahiru. Woah, it’s actually someone that is not your mom, and even more rare; not propaganda from some shitty company deal. Better answer her."
+    
+
+    "*Click.*"
+    
+    a "Hey %(name)s!"
+    "You greet her."
+    a "I was wondering if you’d want to come to my place, we are getting some little family bbq for a couple of days before the great wedding and moms says I can get one friend with me. No more than 12 people and they’re all grownups, don’t worry"
+    "You don’t know that to say, this is too fast for you. A bbq sounds a lot like a party for you, and those make you uncomfortable."
+    a "This evening, sorry for not telling you before, my mom just told me. See you later. Okbye!"
+    "*Beep Beep.*"
+    
+    hide celu2 with fade
+    "And just like that she hangs up and your peaceful day was perfectly ruined. Well, it’s time to get things done and just go, what could go wrong? Yeah, you know. A lot of things."
+    "You get ready and exit your house."
+    
+    scene bg park
+    with fade
+    pause 1.0
+    
+    scene house
+    with fade
+    
+    show ahiru smile 1 
+    with moveinleft
+    pause 1.0
+    
+    show ahiru smile 2
+    a "Nice to see you made it, %(name)s. Please come in!"
+    "You step inside."
+    
+    play music "gravity.mp3" loop fadein 1.0
+    
+    scene livingroom
+    with None
+    "{w}"
+    pause .5
+    
+    "After some boring and awkward meetings with Ahiru’s family and some food, you two get together to speak alone in the living room, while everyone else stays outside near the fire."
+    "You two are sitting on opposite sofas."
+    
+    show ahiru wink smile 3
+    a "I’m so glad you came. I got something for you."
+    show ahiru smile 1
+    "A gift? Why?"
+    "You just nod, dumbfounded."
+    "Ahiru stands up and slowly comes closer to you, but she is not carrying anything on her hands."
+    "She looks at you with a bright playful smile and half closed eyes. Is she insinuating something sexual? NO WAY. What’s wrong with her?"
+    a "Since you were always so difficult to get close to I never got the opportunity."
+    
+    scene livingroom
+    with None
+    hide ahiru smile 1 with None
+    show kiss1 at truecenter:
+        alpha 0
+        linear 1.0 alpha 1
+    
+    
+    "She is crouching at your level in front of you. If wasn’t for you backing a little she would be a couple of inches away from your face. This is kind of scary. What’s going on!"
+    "She places her hand on your right thigh, while keep getting closer to you face. No words came out of your mouth and your whole body is paralyzed. Something tells you leaving you bedroom today was a bad idea."
+    a "Don’t worry, you will love this, %(name)s."
+    hide kiss1
+    
+    show kiss2 at truecenter 
+    
+        
+    "After saying this, she put two fingers of her right hand over her lips, then she proceed to kiss the tips while moaning a little for some reason to finally blow you a kiss."
+    window hide
+   
+    show heart1 at truecenter with None:
+        alpha 0
+        linear 0.5 alpha 1
+        linear 1.0 zoom 1.5
+        alignaround (.5, .5)
+        linear 2.0 yalign 0.0 clockwise circles 2
+        linear 1.0 alpha 0
+    
+    pause 4.5
+    show charm with None:
+        linear 3.0 alpha 0
+    pause 3
+    
+    hide heart1
+    "..."
+    
+    show kiss2 at truecenter
+    "You felt for a split second something warm hit the upper half of your face but it doesn’t matter that much, considering this is the most awkward moment of your life. What the fuck did she just do?"
+    hide kiss2
+    show kiss3 at truecenter
+    "Ahiru backs a little from you, still smiling and with a notorious blush over her face. You try to understand what just happened but it just doesn’t have any sense."
+    hide kiss3
+    show kiss4 at truecenter
+    "And while you try to stand up, you notice her hand is still on your thigh holding it."
+    a "Hush now and enjoy, it will feel good soon, but let’s speed the process shall we?"
+    "She positioned herself to your side on her knees and like a slow motion scene she lifts her hand and pokes between your legs."
+    "The instant she does this a surge of warmth cuts your line of through while you can feel you face burning red."
+    a "You see, until now, you were the last one of the math class to fall for me."
+    "You were holding your breath but then she begun stroking your genitals trough you clothes and a small moan got out of your mouth, gasping a little afterwards. "
+    "Her astonishing green eyes never let your sight get distracted while she keeps on teasing your body."
+    "The warm feeling of arousal rose quickly, a little too quickly, but for some reason it exhausted you that fast as well. Her strokes become steadier, with a low rhythm that your whole body yearns for, eager to continue."
+    
+    hide kiss4
+    show ahiru wink smile 4 at center:
+        alpha 0
+        linear 1.0 alpha 1
+    "Ahiru giggled, probably at the expression you were making at that moment."
+    
+    hide ahiru wink smile 4
+    show ahiru smile 2
+    a "That’s it, it feels good right? I bet it does~"
+    "And just after saying this she lifts her hand leaving your trembling body in need for her touch."
+    
+    
+    "Sweat is running down you face already, the heat was becoming suffocating and so exhausting while the girl in front of you was so pretty. Why you haven’t you been look for her before?"
+    
+    "Ahiru stepped back as she took off her little shoes and stood in front of you. You slowly accommodate yourself on the sofa, feeling crotch aching madly for more attention. "
+    
+    a "Take of you pants and open your legs, let me scratch that annoying itch~”"
+    
+    hide ahiru smile 2 with fade
+    show socks1 with sshake
+    
+    if gender:
+        "You obey her without even thinking, no reason to stop after all. She giggles a little at your shameless display and after lifting her right leg she begins to step on your dick with"
+        "her white sock covered feet with slow, random movements, but that doesn’t matter to your body."
+        "This gorgeous red haired girl makes you helpless with pleasure in just a couple of seconds only using her feet."
+    else:
+        "You obey her without even thinking, no reason to stop after all. She giggles a little at your shameless display and after lifting her right leg she begins to step on your lower lips with"
+        "her white sock covered feet with slow, random movements, but that doesn’t matter to your body. This gorgeous red haired girl makes you helpless with pleasure in just a couple of seconds only using her feet."
+    "The soft fabric of the sock runs gracefully on your overly sensitive skin while adding some surprising tickling sensation that your body and mind wasn’t expecting, only adding more pleasure to your rapidly melting consciousness.  "
+    "The feeling of being dominated with this little effort is driving you crazy, your heart was obstructing you hearing but you don’t pay it much attention; Ahiru’s feet feel too wonderful to even care about yourself."
+        
+    if gender:
+        
+        "However, she suddenly shifts her attention on your balls giving them special focus, massaging them with her thumb’s nail. This instantly makes your body react, tensing up as you reach climax!"
+        hide socks1
+        show socks2
+        "Spurting shot after shots of fluids over the floor, the sofa, and you own clothes, you ride the orgasm like no other, gasping for air, it feels so wonderful and hearing Ahiru’s angelic laugh just makes it better."
+    else:
+        
+        "However, she suddenly shifts her attention on your clit giving it special focus, massaging it with her thumb’s nail. This instantly makes your body react, tensing up as you reach climax!"
+        hide socks1
+        show socks2
+        "Spurting shot after shots of fluids over the floor, the sofa, and you own clothes, you ride the orgasm like no other, gasping for air, it feels so wonderful and hearing Ahiru’s angelic laugh just makes it better."
+    
+    a "Everytime you please, I’ll make sure you enjoy it afterwards… "
+    a "So will you help me with math this year? I mean the teacher is eager to give me goods grades already but I want to be good by myself on that class and since you look so happy now by just using my feet on you I don’t think you will mind helping me don’t ya?"
+    "You nod while catching your breath, that sounds great indeed."
+    hide socks2
+    show ahiru wink smile 4
+    a "Owwww, I knew I could trust  you… After all, you love me don’t you?~"
+    hide ahiru wink smile 4
+    show ahiru smile 2
+    window hide
+    
+    show heart1 at truecenter:
+        alpha 0
+        linear 0.5 alpha 1
+        linear 1.0 zoom 2.5
+        alignaround (.5, .5)
+        linear 2.0 yalign 0.0 clockwise circles 1
+        linear 1.0 alpha 0
+      
+    pause 4.5
+    show charm with None:
+        alpha 1
+        easeout 3.0 alpha 0
+    pause 3
+    
+    "She looms closer to you, and again, after taping the tips of her finger over her lips and kiss them doing a lovely moan, she blows a kiss that you happily reciprocate with a goofy smile."
+    show ahiru smile 1
+    "This time you can see some kind of pink smoke shaped like a cartoonish heart fly and hit you face, spreading after a puff, releasing its mist over you. The nice warmth from before spreads over your whole body this time, like a piece of a delicate silk fabric wrapping over you."
+    "This pleasant sensation slowly fades, and you realize that all you can think about right now is how amazing Ahiru is."
+    "The nice warm from before spread over your whole body this time, like a piece of a delicate sylph fabric. Every feeling that wasn’t how much you care and love Ahiru faded away on that instant."
+    a "Haha, you look so weak and happy now. I know it feels good and all, but that much?"
+    "She laughed at you again. You like when she laughs, wonder if you could make her laugh more often."
+    a "Even if I just hit and insult you, you would probably love it too for sure"
+    a "Oh? So you are bewitched by my legs huh~? Bet you love them already too. It’s ok, you can worship one."
+    
+    hide ahiru smile 2
+    show finalpic
+    "She lifts her left leg, places it over you face and pins you against the seat. You feel her sole trough the sock pressing firmly against you face, the feeling of her wonderful being completely overpowering you sent shivers"
+    "cracking what left of your composure, your hands instinctively drops down to your lap as you take a whiff of the foot, the mix smelled of the worn fabric, sweat and sex overwhelming you as you caress her leg in adoration, everything else fading away as you close your eyes and smile."
+    "Why you didn’t cared for Ahiru before? How blind of you."
+    
+    if p_ahiru == 2:
+        if gender:
+            a "You were a good boy back in the park, %(name)s. I will let you enjoy this more."
+        else:
+            a "You were a good girl back in the park, %(name)s. I will let you enjoy this more."
+    hide finalpic
+    scene credits
+    window hide
+    pause
+
+    # This ends the game.
+
+    return
