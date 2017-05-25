@@ -1,1 +1,149 @@
 ### Main code
+# The script of the game goes in this file.
+
+# Declare characters used by this game. The color argument colorizes the
+# name of the character.
+
+#CHARACTERS 
+define a = Character(_("Ahiru"), color="#e2b3c5")
+
+#IMAGES OF CHARACTERS
+#### Examples:
+#image ahiru smile 1 = "Ahiru_smile_1.png"
+#image ahiru smile 2 = "ahiru_smile_2.png"
+#image ahiru wink smile 3 = "ahiru_wink_smile_3.png"
+#image ahiru wink smile 4 = "ahiru_wink_smile_4.png"
+#image kiss1 = "kiss1.png"
+#image kiss2 = "kiss2.png"
+#image kiss3 = "kiss3.png"
+#image kiss4 = "kiss4.png"
+
+#BACKGROUNDS
+#### Examples:
+#image bg park = "bg_park.png"
+#image house = "house.png"
+#image livingroom = "livingroom.jpg"
+#image room = "room.jpg"
+#image charm = "charm.jpg"
+#image credits = "credits.jpg"
+
+#Accesories:
+#### Examples:
+#image celu1 = "celu1.png"
+#image celu2 = "celu2.png"
+#image heart1 = "pink_heart.png"
+#image heart2 = "pink_heart_2.png"
+
+
+#### Special effects (Yes, I copied them from somewhere else) These HAVE to be into init, or else those will not work ####
+init:
+
+    python:
+      
+        import math
+
+        class Shaker(object):
+        
+            anchors = {
+                'top' : 0.0,
+                'center' : 0.5,
+                'bottom' : 1.0,
+                'left' : 0.0,
+                'right' : 1.0,
+                }
+        
+            def __init__(self, start, child, dist):
+                if start is None:
+                    start = child.get_placement()
+                #
+                self.start = [ self.anchors.get(i, i) for i in start ]  # central position
+                self.dist = dist    # maximum distance, in pixels, from the starting point
+                self.child = child
+                
+            def __call__(self, t, sizes):
+                # Float to integer... turns floating point numbers to
+                # integers.                
+                def fti(x, r):
+                    if x is None:
+                        x = 0
+                    if isinstance(x, float):
+                        return int(x * r)
+                    else:
+                        return x
+
+                xpos, ypos, xanchor, yanchor = [ fti(a, b) for a, b in zip(self.start, sizes) ]
+
+                xpos = xpos - xanchor
+                ypos = ypos - yanchor
+                
+                nx = xpos + (1.0-t) * self.dist * (renpy.random.random()*2-1)
+                ny = ypos + (1.0-t) * self.dist * (renpy.random.random()*2-1)
+
+                return (int(nx), int(ny), 0, 0)
+        
+        def _Shake(start, time, child=None, dist=100.0, **properties):
+
+            move = Shaker(start, child, dist=dist)
+        
+            return renpy.display.layout.Motion(move,
+                          time,
+                          child,
+                          add_sizes=True,
+                          **properties)
+
+        Shake = renpy.curry(_Shake)
+    #
+    $ sshake = Shake((0, 0, 0, 0), 1.0, dist=15)
+#
+############ The game starts here.##############
+
+label start:
+    
+    
+    #POINT VALUES
+    $ p_ahiru = 0
+    
+    $ gender = True
+    
+    play music "bravely.mp3" loop fadein 1.0
+   
+    
+    # Show a background. This uses a placeholder by default, but you can
+    # add a file (named either "bg room.png" or "bg room.jpg") to the
+    # images directory to show it.
+    
+    
+
+    scene bg park
+    with fade
+
+    # This shows a character sprite. A placeholder is used, but you can
+    # replace it by adding a file named "eileen happy.png" to the images
+    # directory.
+    
+
+    
+    # These display lines of dialogue.
+
+##### This is for reference, ignore it########
+menu:
+    "Are you a boy, or are you a girl?"
+    "Boy":
+        jump pregunta
+    
+    "Girl":
+        $ gender = False
+        jump pregunta
+
+label pregunta:
+    if gender:
+        $ name = renpy.input("What is your name, boy?")
+    else:
+        $ name = renpy.input("What is your name, girl?")
+    
+
+    $ name = name.strip()
+    if name == "":
+        $ name="Anon"
+
+label inicio:
